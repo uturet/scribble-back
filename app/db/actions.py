@@ -62,18 +62,17 @@ def create_post(post: PostBase, owner: User, db: Session) -> Post:
     return post
 
 
-def update_post(post: Post, owner: User, db: Session, session_provider=get_session) -> Post:
+def update_post(post_model: Post, post: Post, owner: User, db: Session, session_provider=get_session) -> Post:
     if db is None and session_provider is None:
         raise ValueError("db and session_provider cannot both be None.")
 
     if db is None:
         db = next(session_provider())
 
-    stmt = (
-        update(Post).
-        where(Post.id == post.id).
-        values(data=post.data)
-    )
+    post_model.title = post.title
+    post_model.data = post.data
+    db.add(post_model)
+    db.commit()
 
 
 def user_in_team(post: Post, user: User, session_provider=get_session) -> bool:

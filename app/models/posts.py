@@ -9,6 +9,9 @@ class PostBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class PostResponse(PostBase):
+class PostUpdate(PostBase):
+    id: int
+
+class PostResponse(PostUpdate):
     created_at: datetime.datetime
-    model_config = ConfigDict(from_attributes=True)
+    owner: str

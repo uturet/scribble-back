@@ -4,7 +4,8 @@ from fastapi.param_functions import Depends
 from app.db import get_session
 from app.db.actions import create_post, update_post, get_user_by_name, user_in_team
 from app.exceptions import InvalidUserName
-from app.models.posts import PostBase, PostResponse
+from app.models.posts import PostBase, PostUpdate, PostResponse
+from app.db.models import Post
 from app.security import manager
 
 router = APIRouter(prefix='/posts')
@@ -22,10 +23,17 @@ def create(post: PostBase, user=Depends(manager), db=Depends(get_session)) -> Po
             "description": "Unauthorized user!",
         }},
         response_model=PostResponse)
-def update(post: PostBase, user=Depends(manager), db=Depends(get_session)) -> PostResponse:
-    if post.user_id == user.id or user_in_team(post, user):
-        post = update_post(post, user, db)
-        return PostResponse.model_validate(post)
+def update(post: PostUpdate, user=Depends(manager), db=Depends(get_session)) -> PostResponse:
+    post_model = db.query(Post).where(Post.id == post.id).first()
+    if post_model.owner_id == user.id or user_in_team(post_model, user):
+        post = update_post(post_model, post, user, db)
+        return PostResponse(
+            id=post_model.id,
+            title=post_model.title,
+            data=post_model.data,
+            owner=post_model.owner.username,
+            created_at=post_model.created_at
+        )
 
 
 @router.get('/list')
