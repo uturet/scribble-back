@@ -102,7 +102,7 @@ def create_user(name: str, password: str, db: Session) -> User:
 
 
 def create_post(post: PostBase, owner: User, db: Session) -> Post:
-    post = Post(title=post.title, data=post.data, owner_id=owner.id)
+    post = Post(title=post.title, img=post.img, owner_id=owner.id)
     db.add(post)
     db.commit()
     return post

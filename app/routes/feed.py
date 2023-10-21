@@ -5,17 +5,21 @@ from fastapi.param_functions import Depends
 from app.models.posts import PostResponse
 from app.db.actions import get_feed_result
 from app.db import get_session
+import time
 
 router = APIRouter()
 
-@router.get('/')
+@router.get('/feed')
 def feed_posts(page: int, db=Depends(get_session)) -> List[PostResponse]:
     """ Lists all posts of the current user """
     return [PostResponse(
             id=p.id,
+            img=p.img,
             title=p.title,
-            data=p.data,
-            owner=p.owner.username,
-            created_at=p.created_at
+            owner={
+                "id": p.owner.id,
+                "username": p.owner.username,
+                "image": p.owner.image
+            },
+            created_at=time.time() * 1000
         ) for p in get_feed_result(page, db)]
-

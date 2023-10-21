@@ -7,6 +7,8 @@ from app.db import get_session
 from app.db.actions import get_user_by_name
 from app.models.user import LoginResponse
 from app.security import verify_password, manager
+from datetime import timedelta
+
 
 router = APIRouter(
     prefix="/auth"
@@ -24,7 +26,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not verify_password(form_data.password, user.password):
         raise InvalidCredentialsException
 
-    token = manager.create_access_token(data={'sub': user.username})
+    token = manager.create_access_token(
+        data={'sub': user.username}, 
+        expires=timedelta(days=4))
     return LoginResponse(
         id=user.id,
         username=user.username,

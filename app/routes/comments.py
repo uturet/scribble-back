@@ -6,7 +6,7 @@ from app.db.actions import get_comment_by_id, create_comment, get_comments_by_po
 from app.models.comments import CommentBase, CommentResponse
 from app.security import manager
 from fastapi.exceptions import HTTPException
-
+import time
 router = APIRouter(prefix='/comments')
 
 
@@ -18,7 +18,7 @@ def create(comment: CommentBase, user=Depends(manager), db=Depends(get_session))
             content=comment.content,
             post_id=comment.post_id,
             owner=user.username,
-            created_at=comment.created_at
+            created_at=time.time() * 1000
         )
 
 
@@ -30,7 +30,7 @@ def list_comments_for_post(post_id: int, db=Depends(get_session)) -> List[Commen
             content=cm.content,
             post_id=cm.post_id,
             owner=cm.owner.username,
-            created_at=cm.created_at
+            created_at=time.time() * 1000
         ) for cm in get_comments_by_post_id(post_id, db)]
 
 
@@ -49,5 +49,5 @@ def delete(comment_id: int, user=Depends(manager), db=Depends(get_session)) -> C
             content=comment.content,
             post_id=comment.post_id,
             owner=user.username,
-            created_at=comment.created_at
+            created_at=time.time() * 1000
         )

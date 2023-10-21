@@ -11,5 +11,5 @@ class CommentBase(BaseModel):
 
 class CommentResponse(CommentBase):
     id: int
-    created_at: datetime.datetime
+    created_at: float
     owner: str

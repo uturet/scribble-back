@@ -1,31 +1,45 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
 from fastapi.param_functions import Depends
 from app.db import get_session
 from app.db.actions import create_post, update_post, get_user_by_id, user_in_team
 from app.exceptions import InvalidUserName
 from app.models.posts import PostBase, PostUpdate, PostResponse
 from app.db.models import Post
+from pydantic import BaseModel
 from app.security import manager
 from typing import Annotated
 from fastapi import FastAPI, File, UploadFile
 import string
 import random
 import base64
-
+import time 
 router = APIRouter(prefix='/posts')
 
 def rund_name():
     return f"{''.join(random.choices(string.ascii_letters, k=25))}.png"
 
-@router.post('/create', response_model=bool)
-def create(file: Annotated[bytes, File(description="A file read as bytes")],  user=Depends(manager), db=Depends(get_session)) -> bool:
+class Base(BaseModel):
+    title: str
+
+@router.post('/upload-file', response_model=str)
+def upload_file(file: Annotated[bytes, File()],  user=Depends(manager), db=Depends(get_session)) -> str:
     image = base64.b64decode(file)
-
-    with open(rund_name(), 'wb') as f:
+    name = rund_name()
+    with open(f"public/{name}", 'wb') as f:
         f.write(image)
+    return name
 
-    return True
+@router.post('/create', response_model=PostResponse)
+def create(post: PostBase,  user=Depends(manager), db=Depends(get_session)) -> PostResponse:
+    post = create_post(post, user, db)
+    return PostResponse(
+            id=post.id,
+            img=post.img,
+            title=post.title,
+            owner=user.username,
+            created_at=time.time() * 1000
+        )
 
 
 @router.put('/update', responses={
@@ -40,10 +54,10 @@ def update(post: PostUpdate, user=Depends(manager), db=Depends(get_session)) -> 
         post = update_post(post_model, post, user, db)
         return PostResponse(
             id=post_model.id,
+            img=post_model.img,
             title=post_model.title,
-            data=post_model.data,
             owner=post_model.owner.username,
-            created_at=post_model.created_at
+            created_at=time.time() * 1000
         )
 
 
@@ -53,9 +67,9 @@ def list_posts(user=Depends(manager)) -> List[PostResponse]:
     return [PostResponse(
             id=p.id,
             title=p.title,
-            data=p.data,
+            img=p.img,
             owner=user.username,
-            created_at=p.created_at
+            created_at=time.time() * 1000
         ) for p in user.own_posts]
 
 
@@ -70,7 +84,7 @@ def list_posts_for_user(user_id: int, db=Depends(get_session)) -> List[PostRespo
     return [PostResponse(
             id=p.id,
             title=p.title,
-            data=p.data,
+            img=p.img,
             owner=user.username,
-            created_at=p.created_at
+            created_at=time.time() * 1000
         ) for p in user.own_posts]

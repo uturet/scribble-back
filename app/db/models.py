@@ -38,7 +38,7 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
-    data = Column(JSON)
+    img = Column(String(80), nullable=False)
     owner = relationship("User", back_populates="own_posts")
     owner_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
