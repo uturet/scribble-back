@@ -36,6 +36,21 @@ def get_user_by_id(
     return user
 
 
+def get_post_by_id(
+    id: int,
+    db: Optional[Session] = None,
+    session_provider: Callable[[], Iterator[Session]] = None
+) -> Optional[Post]:
+    if db is None and session_provider is None:
+        raise ValueError("db and session_provider cannot both be None.")
+
+    if db is None:
+        db = next(session_provider())
+
+    post = db.query(Post).where(Post.id == id).first()
+    return post
+
+
 @manager.user_loader(session_provider=get_session)
 def get_user_by_name(
     username: str,

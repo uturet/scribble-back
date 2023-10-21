@@ -2,7 +2,6 @@ from app.db import get_session
 from app.db.actions import create_user, get_user_by_name
 from app.exceptions import (InvalidPermissions, InvalidUserName,
                             UsernameAlreadyTaken)
-from app.db.models import User
 from app.models.user import UserCreate, UserResponse
 from app.security import manager
 from fastapi import APIRouter, Depends
