@@ -1,7 +1,6 @@
 from typing import Callable, Iterator, Optional
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-import json
 from fastapi.exceptions import HTTPException
 from app.db import get_session
 from app.db.models import Post, User
@@ -9,7 +8,6 @@ from app.models.posts import PostBase
 from app.security import hash_password, manager
 import random
 
-@manager.user_loader(session_provider=get_session)
 
 def get_user_by_id(
     id: int,
@@ -38,6 +36,7 @@ def get_user_by_id(
     return user
 
 
+@manager.user_loader(session_provider=get_session)
 def get_user_by_name(
     username: str,
     db: Optional[Session] = None,

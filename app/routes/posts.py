@@ -14,7 +14,13 @@ router = APIRouter(prefix='/posts')
 @router.post('/create', response_model=PostResponse)
 def create(post: PostBase, user=Depends(manager), db=Depends(get_session)) -> PostResponse:
     post = create_post(post, user, db)
-    return PostResponse.model_validate(post)
+    return PostResponse(
+            id=post.id,
+            title=post.title,
+            data=post.data,
+            owner=user.username,
+            created_at=post.created_at
+        )
 
 
 @router.put('/update', responses={

@@ -1,8 +1,5 @@
 from typing import List
-
-from app.models.posts import PostResponse
 from pydantic import BaseModel, ConfigDict
-from fastapi import UploadFile
 
 
 class UserCreate(BaseModel):
