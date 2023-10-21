@@ -136,7 +136,7 @@ def user_in_team(post: Post, user: User, session_provider=get_session) -> bool:
 
 def get_feed_result(page: int, db: Session):
     per_page = 50
-    posts = db.query(Post).offset(page*per_page).limit(per_page).all()
+    posts = db.query(Post).order_by(Post.created_at.desc()).offset(page*per_page).limit(per_page).all()
     return posts
 
 
@@ -148,7 +148,7 @@ def create_comment(comment: CommentBase, owner: User, db: Session):
 
 
 def get_comments_by_post_id(comment_id: int, db: Session):
-    comments = db.query(Comment).all()
+    comments = db.query(Comment).order_by(Comment.created_at.desc()).all()
     return comments
 
 
