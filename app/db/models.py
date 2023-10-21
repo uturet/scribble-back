@@ -20,6 +20,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True)
     password = Column(String(80))
+    image = Column(String(100))
     own_posts = relationship("Post", back_populates="owner")
     team_posts: Mapped[List["Post"]] = relationship(
         secondary=teams, back_populates="users"

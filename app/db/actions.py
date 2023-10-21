@@ -7,6 +7,7 @@ from app.db import get_session
 from app.db.models import Post, User
 from app.models.posts import PostBase
 from app.security import hash_password, manager
+import random
 
 @manager.user_loader(session_provider=get_session)
 
@@ -77,7 +78,10 @@ def create_user(name: str, password: str, db: Session) -> User:
         The newly created user.
     """
     hashed_pw = hash_password(password)
-    user = User(username=name, password=hashed_pw)
+    user = User(
+        username=name, 
+        image=f"{random.randint(1,25)}.png",
+        password=hashed_pw)
     db.add(user)
     db.commit()
     return user
