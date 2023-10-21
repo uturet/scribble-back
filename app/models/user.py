@@ -9,7 +9,6 @@ class UserCreate(BaseModel):
     password: str
 
 
-class UserResponse(UserCreate):
-
-    posts: List[PostResponse]
+class UserResponse(BaseModel):
+    username: str
     model_config = ConfigDict(from_attributes=True)

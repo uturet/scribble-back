@@ -1,8 +1,17 @@
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
+from typing import List
 from sqlalchemy.sql import func
-from sqlalchemy import Column, Integer, String, Boolean, JSON, DateTime, ForeignKey, Text, Table
-
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Text, Table
+from pydantic import ConfigDict
 from app.db import Base
+
+
+teams = Table(
+    "teams",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id")),
+    Column("post_id", ForeignKey("posts.id")),
+)
 
 
 class User(Base):
@@ -11,23 +20,30 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True)
     password = Column(String(80))
-    is_admin = Column(Boolean, default=False)
-    posts = relationship("Post", back_populates="owner")
+    own_posts = relationship("Post", back_populates="owner")
+    team_posts: Mapped[List["Post"]] = relationship(
+        secondary=teams, back_populates="users"
+    )
 
     def __repr__(self) -> str:
         return f"User(username={self.username}, is_admin={self.is_admin})"
 
-# data = [{}]
+# data = [{canvas: text, description: text}]
+
 
 class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True)
+    title = Column(String(80), nullable=False)
     data = Column(JSON)
-    owner = relationship("User", back_populates="posts")
+    owner = relationship("User", back_populates="own_posts")
     owner_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
     comments = relationship("Comment", back_populates="post")
+    users: Mapped[List["User"]] = relationship(
+        secondary=teams, back_populates="team_posts"
+    )
 
     def __repr__(self) -> str:
         return f"Post(data={self.data[:min(50, len(self.data))]})"
@@ -35,7 +51,7 @@ class Post(Base):
 
 class Comment(Base):
     __tablename__ = "comments"
-
+    
     id = Column(Integer, primary_key=True)
     content = Column(Text)
     post = relationship("Post", back_populates="comments")
@@ -46,9 +62,3 @@ class Comment(Base):
         return f"Comment(content={self.content[:min(50, len(self.content))]})"
 
 
-association_table = Table(
-    "teams",
-    Base.metadata,
-    Column("user_id", ForeignKey("users.id")),
-    Column("post_id", ForeignKey("posts.id")),
-)

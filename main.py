@@ -34,14 +34,13 @@ def create_secret(_args):
 def create_admin(_args):
     session = next(get_session())
     create_tables()
-    create_user(args.username, args.password, session, is_admin=True)
+    create_user(args.username, args.password, session)
     print("Admin created.")
 
 
 def run(_args):
     import uvicorn
-    from app.app import app
-    uvicorn.run(app)
+    uvicorn.run("app:app.app", host='0.0.0.0', port=8000, workers=2, reload=True)
 
 
 parser = argparse.ArgumentParser(description='CLI to setup our blogging API.')

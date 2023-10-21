@@ -1,11 +1,12 @@
 from typing import Callable, Iterator, Optional
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-
+import json
+from fastapi.exceptions import HTTPException
 from app.db import get_session
 from app.db.models import Post, User
+from app.models.posts import PostBase
 from app.security import hash_password, manager
-
 
 @manager.user_loader(session_provider=get_session)
 def get_user_by_name(
@@ -35,7 +36,7 @@ def get_user_by_name(
     return user
 
 
-def create_user(name: str, password: str, db: Session, is_admin: bool = False) -> User:
+def create_user(name: str, password: str, db: Session) -> User:
     """
     Creates and commits a new user object to the database
 
@@ -43,20 +44,46 @@ def create_user(name: str, password: str, db: Session, is_admin: bool = False) -
         name: The name of the user
         password: The plaintext password
         db: The active db session
-        is_admin: Whether the user is a admin, defaults to false
 
     Returns:
         The newly created user.
     """
     hashed_pw = hash_password(password)
-    user = User(username=name, password=hashed_pw, is_admin=is_admin)
+    user = User(username=name, password=hashed_pw)
     db.add(user)
     db.commit()
     return user
 
 
-def create_post(text: str, owner: User, db: Session) -> Post:
-    post = Post(text=text, owner=owner)
+def create_post(post: PostBase, owner: User, db: Session) -> Post:
+    post = Post(title=post.title, data=post.data, owner_id=owner.id)
     db.add(post)
     db.commit()
     return post
+
+
+def update_post(post: Post, owner: User, db: Session, session_provider=get_session) -> Post:
+    if db is None and session_provider is None:
+        raise ValueError("db and session_provider cannot both be None.")
+
+    if db is None:
+        db = next(session_provider())
+
+    stmt = (
+        update(Post).
+        where(Post.id == post.id).
+        values(data=post.data)
+    )
+
+
+def user_in_team(post: Post, user: User, session_provider=get_session) -> bool:
+    if db is None and session_provider is None:
+        raise ValueError("db and session_provider cannot both be None.")
+
+    if db is None:
+        db = next(session_provider())
+
+    post_team = [u.id for u in post.users]
+    if user.id not in post_team:
+        raise HTTPException(401)
+    return True
