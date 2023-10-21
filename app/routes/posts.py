@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
 from app.db import get_session
-from app.db.actions import create_post, update_post, get_user_by_name, user_in_team
+from app.db.actions import create_post, update_post, get_user_by_id, user_in_team
 from app.exceptions import InvalidUserName
 from app.models.posts import PostBase, PostUpdate, PostResponse
 from app.db.models import Post
@@ -39,15 +39,27 @@ def update(post: PostUpdate, user=Depends(manager), db=Depends(get_session)) -> 
 @router.get('/list')
 def list_posts(user=Depends(manager)) -> List[PostResponse]:
     """ Lists all posts of the current user """
-    return [PostResponse.model_validate(p) for p in user.posts]
+    return [PostResponse(
+            id=p.id,
+            title=p.title,
+            data=p.data,
+            owner=user.username,
+            created_at=p.created_at
+        ) for p in user.own_posts]
 
 
-@router.get('/list/{username}')
-def list_posts_for_user(username: str, _=Depends(manager), db=Depends(get_session)) -> List[PostResponse]:
+@router.get('/list/{user_id}')
+def list_posts_for_user(user_id: int, db=Depends(get_session)) -> List[PostResponse]:
     """ Lists all posts of the given user """
-    user = get_user_by_name(username, db)
+    user = get_user_by_id(user_id, db)
 
     if user is None:
         raise InvalidUserName
 
-    return [PostResponse.model_validate(p) for p in user.posts]
+    return [PostResponse(
+            id=p.id,
+            title=p.title,
+            data=p.data,
+            owner=user.username,
+            created_at=p.created_at
+        ) for p in user.own_posts]

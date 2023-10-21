@@ -9,8 +9,9 @@ from app.models.posts import PostBase
 from app.security import hash_password, manager
 
 @manager.user_loader(session_provider=get_session)
-def get_user_by_name(
-    name: str,
+
+def get_user_by_id(
+    id: int,
     db: Optional[Session] = None,
     session_provider: Callable[[], Iterator[Session]] = None
 ) -> Optional[User]:
@@ -32,7 +33,34 @@ def get_user_by_name(
     if db is None:
         db = next(session_provider())
 
-    user = db.query(User).where(User.username == name).first()
+    user = db.query(User).where(User.id == id).first()
+    return user
+
+
+def get_user_by_name(
+    username: str,
+    db: Optional[Session] = None,
+    session_provider: Callable[[], Iterator[Session]] = None
+) -> Optional[User]:
+    """
+    Queries the database for a user with the given name
+
+    Args:
+        name: The name of the user
+        db: The currently active database session
+        session_provider: Optional method to retrieve a session if db is None (provided by our LoginManager)
+
+    Returns:
+        The user object or none
+    """
+
+    if db is None and session_provider is None:
+        raise ValueError("db and session_provider cannot both be None.")
+
+    if db is None:
+        db = next(session_provider())
+
+    user = db.query(User).where(User.username == username).first()
     return user
 
 
