@@ -2,8 +2,9 @@ from typing import Callable, Iterator, Optional
 from sqlalchemy.orm import Session
 from fastapi.exceptions import HTTPException
 from app.db import get_session
-from app.db.models import Post, User
+from app.db.models import Post, User, Comment
 from app.models.posts import PostBase
+from app.models.comments import CommentBase
 from app.security import hash_password, manager
 import random
 
@@ -122,3 +123,20 @@ def get_feed_result(page: int, db: Session):
     per_page = 50
     posts = db.query(Post).offset(page*per_page).limit(per_page).all()
     return posts
+
+
+def create_comment(comment: CommentBase, owner: User, db: Session):
+    comment = Comment(post_id=comment.post_id, content=comment.content, owner_id=owner.id)
+    db.add(comment)
+    db.commit()
+    return comment
+
+
+def get_comments_by_post_id(comment_id: int, db: Session):
+    comments = db.query(Comment).all()
+    return comments
+
+
+def get_comment_by_id(comment_id: int, db: Session):
+    comments = db.query(Comment).where(Comment.id == comment_id).first()
+    return comments

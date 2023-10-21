@@ -22,6 +22,7 @@ class User(Base):
     password = Column(String(80))
     image = Column(String(100))
     own_posts = relationship("Post", back_populates="owner")
+    comments = relationship("Comment", back_populates="owner")
     team_posts: Mapped[List["Post"]] = relationship(
         secondary=teams, back_populates="users"
     )
@@ -57,6 +58,8 @@ class Comment(Base):
     content = Column(Text)
     post = relationship("Post", back_populates="comments")
     post_id = Column(Integer, ForeignKey('posts.id'))
+    owner = relationship("User", back_populates="comments")
+    owner_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
 
     def __repr__(self) -> str:
