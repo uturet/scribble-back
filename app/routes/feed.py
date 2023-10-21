@@ -2,14 +2,20 @@
 from typing import List
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
-from app.exceptions import InvalidUserName
 from app.models.posts import PostResponse
-from app.security import manager
+from app.db.actions import get_feed_result
+from app.db import get_session
 
 router = APIRouter()
 
-@router.get('')
-def list_posts(user=Depends(manager)) -> List[PostResponse]:
+@router.get('/')
+def feed_posts(page: int, db=Depends(get_session)) -> List[PostResponse]:
     """ Lists all posts of the current user """
-    return [PostResponse.model_validate(p) for p in user.posts]
+    return [PostResponse(
+            id=p.id,
+            title=p.title,
+            data=p.data,
+            owner=p.owner.username,
+            created_at=p.created_at
+        ) for p in get_feed_result(page, db)]
 

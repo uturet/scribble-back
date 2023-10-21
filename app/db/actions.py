@@ -1,5 +1,4 @@
 from typing import Callable, Iterator, Optional
-from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from fastapi.exceptions import HTTPException
 from app.db import get_session
@@ -117,3 +116,9 @@ def user_in_team(post: Post, user: User, session_provider=get_session) -> bool:
     if user.id not in post_team:
         raise HTTPException(401)
     return True
+
+
+def get_feed_result(page: int, db: Session):
+    per_page = 50
+    posts = db.query(Post).offset(page*per_page).limit(per_page).all()
+    return posts
