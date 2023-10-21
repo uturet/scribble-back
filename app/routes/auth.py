@@ -5,16 +5,15 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.db.actions import get_user_by_name
-from app.models.auth import Token
+from app.models.user import LoginResponse
 from app.security import verify_password, manager
 
 router = APIRouter(
     prefix="/auth"
 )
 
-
-@router.post('/login', response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_session)) -> Token:
+@router.post('/login', response_model=LoginResponse)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_session)) -> LoginResponse:
     """
     Logs in the user provided by form_data.username and form_data.password
     """
@@ -26,4 +25,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise InvalidCredentialsException
 
     token = manager.create_access_token(data={'sub': user.username})
-    return Token(access_token=token, token_type='bearer')
+    return LoginResponse(
+        id=user.id,
+        username=user.username,
+        image=user.image,
+        token=token,
+        token_type='bearer'
+    )

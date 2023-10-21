@@ -7,20 +7,25 @@ from app.exceptions import InvalidUserName
 from app.models.posts import PostBase, PostUpdate, PostResponse
 from app.db.models import Post
 from app.security import manager
+from typing import Annotated
+from fastapi import FastAPI, File, UploadFile
+import string
+import random
+import base64
 
 router = APIRouter(prefix='/posts')
 
+def rund_name():
+    return f"{''.join(random.choices(string.ascii_letters, k=25))}.png"
 
-@router.post('/create', response_model=PostResponse)
-def create(post: PostBase, user=Depends(manager), db=Depends(get_session)) -> PostResponse:
-    post = create_post(post, user, db)
-    return PostResponse(
-            id=post.id,
-            title=post.title,
-            data=post.data,
-            owner=user.username,
-            created_at=post.created_at
-        )
+@router.post('/create', response_model=bool)
+def create(file: Annotated[bytes, File(description="A file read as bytes")],  user=Depends(manager), db=Depends(get_session)) -> bool:
+    image = base64.b64decode(file)
+
+    with open(rund_name(), 'wb') as f:
+        f.write(image)
+
+    return True
 
 
 @router.put('/update', responses={

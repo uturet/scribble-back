@@ -22,3 +22,14 @@ def register(user: UserCreate, db=Depends(get_session)) -> UserResponse:
         return UserResponse.model_validate(user)
     except IntegrityError:
         raise UsernameAlreadyTaken
+
+
+@router.get('/logged_in', response_model=dict, status_code=200)
+def register(user=Depends(manager), db=Depends(get_session)) -> dict:
+    """
+    get user data
+    """
+    try:
+        return { "loggedIn": True, "user": UserResponse.model_validate(user) }
+    except IntegrityError:
+        raise InvalidPermissions

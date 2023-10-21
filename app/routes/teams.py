@@ -31,7 +31,7 @@ def create(team: TeamBase, user=Depends(manager), db=Depends(get_session)) -> Te
     return TeamResponse(
             post_id=team.post_id,
             users=[
-        UserResponse(username=u.username, image=u.image) for u in post.users
+        UserResponse(id=u.id, username=u.username, image=u.image) for u in post.users
     ])
 
 
@@ -46,7 +46,7 @@ def list_comments_for_post(post_id: int, db=Depends(get_session)) -> TeamRespons
     return TeamResponse(
             post_id=post_id,
             users=[
-        UserResponse(username=u.username, image=u.image) for u in post.users
+        UserResponse(id=u.id, username=u.username, image=u.image) for u in post.users
     ])
 
 

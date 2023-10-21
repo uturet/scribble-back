@@ -8,6 +8,12 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
+    id: int
     username: str
     image: str
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoginResponse(UserResponse):
+    token: str
+    token_type: str

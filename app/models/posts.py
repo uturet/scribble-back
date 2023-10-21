@@ -1,11 +1,10 @@
 import datetime
 from pydantic import ConfigDict, BaseModel
+from fastapi import File
 
 
 class PostBase(BaseModel):
     title: str
-    data: list
-
     model_config = ConfigDict(from_attributes=True)
 
 
